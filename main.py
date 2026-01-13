@@ -10,7 +10,7 @@ Responsibilities:
 """
 
 import subprocess
-from motor.stepper_controller import StepperMotorController
+from motor.gantry_controller import GantryMotorControllers
 
 def call_cpp_solver(input_data: str) -> str:
     """
@@ -31,16 +31,21 @@ def call_cpp_solver(input_data: str) -> str:
     
     return output.strip()
 
+
 def main():
+    
     print("Starting main control program...")
 
-    motor = StepperMotorController(step_pin=17, dir_pin=27)  # Example GPIO pins
-    motor.initialize()
+    system = GantryMotorControllers(step_pin=23, dir_pin=24)
+    # Example GPIO pins
+    system.initialize()
 
     # Example loop (replace with real logic)
     while True:
         # Example: ask solver for next move
         solver_input = "REQUEST_NEXT_MOVE"
+
+
 
         solver_output = call_cpp_solver(solver_input)
         print("[Solver Output]:", solver_output)
@@ -48,12 +53,12 @@ def main():
         # Example parse: expect something like "MOVE:100"
         if solver_output.startswith("MOVE:"):
             steps = int(solver_output.split(":")[1])
-            motor.step(steps)
+            system.step(steps)
         
         # Break for demo; remove for continuous operation
         break
 
-    motor.cleanup()
+    system.cleanup()
     print("Program complete.")
 
 if __name__ == "__main__":

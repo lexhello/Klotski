@@ -2,6 +2,7 @@
 #include <string>
 
 int main() {
+
     std::string input;
     
     // Read one line from stdin (blocking)

@@ -7,7 +7,7 @@ This file abstracts hardware control away from main logic.
 import time
 import RPi.GPIO as GPIO
 
-class StepperMotorController:
+class GantryMotorControllers:
     def __init__(self, step_pin, dir_pin):
         self.step_pin = step_pin
         self.dir_pin = dir_pin
