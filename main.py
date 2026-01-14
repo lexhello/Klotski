@@ -1,76 +1,93 @@
-#!/usr/bin/env python3
-"""
-Main Python Program for Raspberry Pi 4
-
-Responsibilities:
-- Initialize & control stepper motor
-- Send tasks to C++ solver
-- Receive results from solver
-- Integrate solver results into motor control loop
-"""
-
+import json
 import subprocess
-from motor.gantry_controller import GantryMotorControllers
+import sys
 
-def call_cpp_solver(input_data: str) -> str:
+def call_cpp_solver(board, k):
     """
-    Calls the C++ solver as a subprocess, sends input, returns output.
+    board: list of ints e.g. [0,1,2,3,4,5,6,7,8]
+    k: grid size (3 for 8-puzzle)
     """
-    process = subprocess.Popen(
-        ["./solver/solver"],   # compiled executable
+
+    # Prepare input to C++ solver: first k, then k*k numbers on separate lines
+    input_data = str(k) + "\n" + "\n".join(map(str, board)) + "\n"
+
+    proc = subprocess.Popen(
+        ["./solver"],  # assumes solver executable is compiled as ./solver
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
     )
 
-    output, errors = process.communicate(input_data)
+    out, err = proc.communicate(input_data)
+    if err:
+        print("[Solver Error]:", err, file=sys.stderr)
+    return out.strip()
 
-    if errors:
-        print("[Solver Error] ", errors)
-    
-    return output.strip()
+
+def parse_solver_output(raw):
+    """
+    Solver outputs:
+        M
+        U
+        L
+        R
+        ...
+
+    Convert each solver move into (target_coord, direction)
+    """
+
+    lines = raw.splitlines()
+    move_count = int(lines[0])
+    moves = lines[1:]
+
+    parsed = []
+    zero_r, zero_c = 0, 0  # OR track actual position if needed
+
+    dir_map = {
+        "U": (0, -1, "UP"),
+        "D": (0, +1, "DOWN"),
+        "L": (-1, 0, "LEFT"),
+        "R": (+1, 0, "RIGHT")
+    }
+
+    for m in moves:
+        dx, dy, name = dir_map[m]
+        target_coord = (zero_r + dy, zero_c + dx)
+        parsed.append({"target_coord": target_coord, "direction": name})
+
+        zero_r, zero_c = target_coord  # update zero position
+
+    return parsed
 
 
 def main():
-    
-    print("Starting main control program...")
+    print("Enter puzzle board like: [0, 1, 2, 3, 4, 5, 6, 7, 8]")
+    text = sys.stdin.readline().strip()
 
-    system = GantryMotorControllers(step_pin=23, dir_pin=24)
-    # Example GPIO pins
-    system.initialize()
+    # Convert "[0, 1, 2, ...]" into python list
+    try:
+        board = json.loads(text)
+    except json.JSONDecodeError:
+        print("Invalid input format! Must be like [0,1,2,3,...]")
+        return
 
-    # Example loop (replace with real logic)
-    while True:
-        # Example: ask solver for next move
-        solver_input = "REQUEST_NEXT_MOVE"
+    # infer k
+    n = len(board)
+    k = int((n)**0.5)
+    if k*k != n:
+        print("Board length must be perfect square!")
+        return
 
+    raw_output = call_cpp_solver(board, k)
+    print("[Raw Solver Output]:")
+    print(raw_output)
 
+    parsed_moves = parse_solver_output(raw_output)
 
-        solver_output = call_cpp_solver(solver_input)
-        print("[Solver Output]:", solver_output)
-
-        # Example parse: expect something like "MOVE:100"
-        if solver_output.startswith("MOVE:"):
-            steps = int(solver_output.split(":")[1])
-            system.step(steps)
-        
-        # Break for demo; remove for continuous operation
-        break
-
-    system.cleanup()
-    print("Program complete.")
+    print("\n[Parsed Moves]:")
+    for p in parsed_moves:
+        print(p)
 
 if __name__ == "__main__":
     main()
-
-
-"""
-Python main.py
-   ↳ sends "REQUEST_NEXT_MOVE" → stdin → solver
-   ↳ solver runs computation
-   ↳ prints "MOVE:100" to stdout
-   ↳ Python receives & parses
-   ↳ Python commands stepper to move 100 steps
-
-"""
