@@ -4,17 +4,8 @@
 #include <unordered_map>
 #include <algorithm>
 #include <string>
-#include <numeric>
 
 using namespace std;
-
-struct State {
-    vector<int> board;
-    int k;
-    int zero_pos;
-    int g; // cost so far
-    int h; // heuristic
-};
 
 const std::vector<int> goal = {0,1,2,3,4,5,6,7,8};
 
@@ -39,7 +30,6 @@ string encode(const vector<int>& b) {
     s.resize(b.size() * 3);
     int idx = 0;
     for (int x : b) {
-        // 2 digits + space
         s[idx++] = char(x / 10 + '0');
         s[idx++] = char(x % 10 + '0');
         s[idx++] = ',';
@@ -61,7 +51,6 @@ int main() {
 
     auto h0 = manhattan(start, k);
 
-    // Priority queue node: f = g + h
     struct Node {
         int f, g, h;
         vector<int> board;
@@ -87,20 +76,17 @@ int main() {
 
     unordered_map<string, int> best_g;
     unordered_map<string, pair<string,string>> parent;
-    // parent[state] = {parent_state, move}
 
     string startKey = encode(start);
     best_g[startKey] = 0;
 
-    // Move definitions
-    vector<pair<int,string>> moves; // (offset, move_name)
-    // Move 0 DOWN means blank moves DOWN (swap with tile below)
-    // But we output direction blank moves
-    // offset = ±1 or ±k
-    moves.push_back({-k, "D"});   // blank goes UP => tile goes DOWN
-    moves.push_back({+k, "U"});     // blank goes DOWN => tile goes UP
-    moves.push_back({-1, "R"});  // blank moves LEFT => tile moves RIGHT
-    moves.push_back({+1, "L"});   // blank moves RIGHT => tile moves LEFT
+    // Move definitions: (offset, direction_name)
+    // Direction is where the TILE moves (opposite of where blank moves)
+    vector<pair<int,string>> moves;
+    moves.push_back({-k, "U"});   // blank goes up => tile above moves down becomes up
+    moves.push_back({+k, "D"});   // blank goes down => tile below moves up becomes down
+    moves.push_back({-1, "L"});   // blank goes left => tile on left moves right becomes left
+    moves.push_back({+1, "R"});   // blank goes right => tile on right moves left becomes right
 
     string goalKey = encode(goal);
 
@@ -120,8 +106,34 @@ int main() {
                 s = p.first;
             }
             reverse(path.begin(), path.end());
+            
+            // Output format: num_moves, then each move as "row,col,direction"
             cout << path.size() << "\n";
-            for (auto &m : path) cout << m << "\n";
+            
+            // Replay moves to output tile positions
+            vector<int> replay = start;
+            int zero = find(replay.begin(), replay.end(), 0) - replay.begin();
+            
+            for (auto &m : path) {
+                int tile_pos = -1;
+                int dir_offset = 0;
+                
+                if (m == "U") dir_offset = -k;
+                else if (m == "D") dir_offset = +k;
+                else if (m == "L") dir_offset = -1;
+                else if (m == "R") dir_offset = +1;
+                
+                tile_pos = zero + dir_offset;
+                int tile_row = tile_pos / k;
+                int tile_col = tile_pos % k;
+                
+                // Output: row,col,direction
+                cout << tile_row << "," << tile_col << "," << m << "\n";
+                
+                // Update state
+                swap(replay[zero], replay[tile_pos]);
+                zero = tile_pos;
+            }
             return 0;
         }
 
