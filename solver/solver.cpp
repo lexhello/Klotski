@@ -126,7 +126,12 @@ int main() {
                 tile_pos = zero + dir_offset;
                 int tile_row = tile_pos / k;
                 int tile_col = tile_pos % k;
-                
+
+                if (m == "U") m = "D";
+                else if (m == "D") m = "U";
+                else if (m == "L") m = "R";
+                else if (m == "R") m = "L";
+
                 // Output: row,col,direction
                 cout << tile_row << "," << tile_col << "," << m << "\n";
                 
