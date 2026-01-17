@@ -11,8 +11,8 @@ import pigpio as GPIO
 STEPS_TO_BLOCK = 425  # Example conversion factor
 HEIGHT_TO_STEPS_Z = 0
 
-RIGHT = 0
-LEFT = 1
+RIGHT = 1
+LEFT = 0
 UP = 0
 DOWN = 1
 
