@@ -11,10 +11,10 @@ import pigpio as GPIO
 STEPS_TO_BLOCK = 425  # Example conversion factor
 HEIGHT_TO_STEPS_Z = 0
 
-RIGHT = 1
-LEFT = 0
-UP = 1
-DOWN = 0
+RIGHT = 0
+LEFT = 1
+UP = 0
+DOWN = 1
 
 class GantryMotorControllers:
     def __init__(self, stepX_pin, dirX_pin_1, dirX_pin_2, stepY_pin, dirY_pin, stepZ_pin, dirZ_pin):
@@ -39,7 +39,8 @@ class GantryMotorControllers:
         self.pi = GPIO.pi()
         assert self.pi.connected
         self.pi.set_mode(self.stepX_pin, GPIO.OUTPUT)
-        self.pi.set_mode(self.dirX_pin, GPIO.OUTPUT)
+        self.pi.set_mode(self.dirX_pin_1, GPIO.OUTPUT)
+        self.pi.set_mode(self.dirX_pin_2, GPIO.OUTPUT)
         self.pi.set_mode(self.stepY_pin, GPIO.OUTPUT)
         self.pi.set_mode(self.dirY_pin, GPIO.OUTPUT)
         self.pi.set_mode(self.stepZ_pin, GPIO.OUTPUT)
@@ -58,13 +59,13 @@ class GantryMotorControllers:
     
     def move_direction(self, direction):
         if direction == 'U':
-            self.move_to((self.current_position[0], self.current_position[1] - 1))
+            self.move_to((self.current_position[0]-1, self.current_position[1] ))
         elif direction == 'D':
-            self.move_to((self.current_position[0], self.current_position[1] + 1))
+            self.move_to((self.current_position[0]+1, self.current_position[1]))
         elif direction == 'L':
-            self.move_to((self.current_position[0] - 1, self.current_position[1]))
+            self.move_to((self.current_position[0], self.current_position[1]-1))
         elif direction == 'R':
-            self.move_to((self.current_position[0] + 1, self.current_position[1]))
+            self.move_to((self.current_position[0], self.current_position[1] + 1))
         else:
             print("Invalid direction command.")
     
@@ -86,7 +87,7 @@ class GantryMotorControllers:
         self.current_position[1] = dest[1]
         print(f"Moved to position: {self.current_position}")
         
-    def stepX(self, direction, steps, step_delay=0.001):
+    def stepX(self, direction, steps, step_delay=0.005):
         # GPIO.output(self.dirX_pin, GPIO.HIGH if direction > 0 else GPIO.LOW)
         self.pi.write(self.dirX_pin_1, RIGHT if direction > 0 else LEFT)
         self.pi.write(self.dirX_pin_2, LEFT if direction > 0 else RIGHT)
@@ -98,7 +99,7 @@ class GantryMotorControllers:
         self.current_position[0] += direction * steps
         print(f"Motor X moved {direction * steps} steps.")
 
-    def stepY(self, direction, steps, step_delay=0.001):
+    def stepY(self, direction, steps, step_delay=0.005):
         # GPIO.output(self.dirY_pin, GPIO.HIGH if direction > 0 else GPIO.LOW)
         self.pi.write(self.dirY_pin, UP if direction > 0 else DOWN)
         for _ in range(steps):
@@ -109,7 +110,7 @@ class GantryMotorControllers:
         self.current_position[1] += direction * steps
         print(f"Motor Y moved {direction * steps} steps.")
 
-    def stepZ(self, direction, steps, step_delay=0.001):
+    def stepZ(self, direction, steps, step_delay=0.005):
         self.pi.write(self.dirZ_pin, 1 if direction > 0 else 0)
         for _ in range(steps):
             self.pi.write(self.stepZ_pin, 1)

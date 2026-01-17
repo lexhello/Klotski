@@ -1,7 +1,7 @@
 import json
 import subprocess
 import sys
-# from motor.gantry_controller import GantryMotorControllers
+from motor.gantry_controller import GantryMotorControllers
 
 def call_cpp_solver(board, k):
     """
@@ -75,7 +75,7 @@ def execute_puzzle_solution(board, gantry):
     print(f"\n[Executing {len(moves)} moves]:")
     for i, (row, col, direction) in enumerate(moves):
         print(f"Move {i+1}: Tile at ({row},{col}) moving {direction}")
-        # gantry.execute_move((col, row), direction)  # Note: gantry uses (x,y) = (col,row)
+        gantry.execute_move((col, row), direction)  # Note: gantry uses (x,y) = (col,row)
         print()
     
     print("Puzzle solved!")
@@ -83,15 +83,15 @@ def execute_puzzle_solution(board, gantry):
 
 def main():
     # Initialize gantry (replace with your actual pin numbers)
-    # gantry = GantryMotorControllers(
-    #     stepX_pin=17, dirX_pin=27,
-    #     stepY_pin=22, dirY_pin=23,
-    #     stepZ_pin=24, dirZ_pin=25
-    # )
+    gantry = GantryMotorControllers(
+        stepX_pin=17, dirX_pin_1=27, dirX_pin_2=4,
+        stepY_pin=26, dirY_pin=24,
+        stepZ_pin=5, dirZ_pin=6
+    )
     
     try:
-        # gantry.initialize()
-        # gantry.reset_position()
+        gantry.initialize()
+        gantry.reset_position()
         
         print("\nEnter puzzle board like: [0, 1, 2, 3, 4, 5, 6, 7, 8]")
         print("(0 represents the empty space)")
@@ -103,8 +103,7 @@ def main():
             print("Invalid input format! Must be like [0,1,2,3,...]")
             return
         
-        # execute_puzzle_solution(board, gantry)
-        execute_puzzle_solution(board, None)
+        execute_puzzle_solution(board, gantry)
         
     finally:
         # gantry.cleanup()
