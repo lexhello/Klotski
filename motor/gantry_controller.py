@@ -36,12 +36,12 @@ class GantryMotorControllers:
     def initialize(self):
         self.pi = GPIO.pi()
         assert self.pi.connected
-        GPIO.set_mode(self.stepX_pin, GPIO.OUTPUT)
-        GPIO.set_mode(self.dirX_pin, GPIO.OUTPUT)
-        GPIO.set_mode(self.stepY_pin, GPIO.OUTPUT)
-        GPIO.set_mode(self.dirY_pin, GPIO.OUTPUT)
-        GPIO.set_mode(self.stepZ_pin, GPIO.OUTPUT)
-        GPIO.set_mode(self.dirZ_pin, GPIO.OUTPUT)
+        self.pi.set_mode(self.stepX_pin, GPIO.OUTPUT)
+        self.pi.set_mode(self.dirX_pin, GPIO.OUTPUT)
+        self.pi.set_mode(self.stepY_pin, GPIO.OUTPUT)
+        self.pi.set_mode(self.dirY_pin, GPIO.OUTPUT)
+        self.pi.set_mode(self.stepZ_pin, GPIO.OUTPUT)
+        self.pi.set_mode(self.dirZ_pin, GPIO.OUTPUT)
         print("all stepper motors initialized.")
     
     """
@@ -125,5 +125,5 @@ class GantryMotorControllers:
         print("Moved down.")
 
     def cleanup(self):
-        GPIO.cleanup()
+        self.pi.stop()
         print("GPIO cleanup complete.")
