@@ -35,7 +35,7 @@ pi.write(STEPZ, 1)
 
 time.sleep(1)
 
-for i in range(425):
+for i in range(435):
     pi.write(STEPX, 1)
     pi.write(STEPY, 1)
     pi.write(STEPZ, 1)
