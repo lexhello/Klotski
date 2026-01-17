@@ -7,7 +7,7 @@
 
 using namespace std;
 
-const std::vector<int> goal = {0,1,2,3,4,5,6,7,8};
+const std::vector<int> goal = {1,2,3,4,5,6,7,8, 0};
 
 // Manhattan distance
 int manhattan(const vector<int>& board, int k) {
