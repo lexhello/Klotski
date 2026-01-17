@@ -16,9 +16,10 @@ UP = 1
 DOWN = 0
 
 class GantryMotorControllers:
-    def __init__(self, stepX_pin, dirX_pin, stepY_pin, dirY_pin, stepZ_pin, dirZ_pin):
+    def __init__(self, stepX_pin, dirX_pin_1, dirX_pin_2, stepY_pin, dirY_pin, stepZ_pin, dirZ_pin):
         self.stepX_pin = stepX_pin
-        self.dirX_pin = dirX_pin
+        self.dirX_pin_1 = dirX_pin_1
+        self.dirX_pin_2 = dirX_pin_2
         self.stepY_pin = stepY_pin
         self.dirY_pin = dirY_pin
         self.stepZ_pin = stepZ_pin
@@ -86,7 +87,8 @@ class GantryMotorControllers:
         
     def stepX(self, direction, steps, step_delay=0.001):
         # GPIO.output(self.dirX_pin, GPIO.HIGH if direction > 0 else GPIO.LOW)
-        self.pi.write(self.dirX_pin, RIGHT if direction > 0 else LEFT)
+        self.pi.write(self.dirX_pin_1, RIGHT if direction > 0 else LEFT)
+        self.pi.write(self.dirX_pin_2, LEFT if direction > 0 else RIGHT)
         for _ in range(steps):
             self.pi.write(self.stepX_pin, 1)
             time.sleep(step_delay)
