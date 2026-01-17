@@ -6,10 +6,11 @@ This file abstracts hardware control away from main logic.
 
 import time
 import pigpio as GPIO
+import threading
 
 #425.45 is more precise
 STEPS_TO_BLOCK = 425  # Example conversion factor
-HEIGHT_TO_STEPS_Z = 0
+HEIGHT_TO_STEPS_Z = 25
 
 RIGHT = 1
 LEFT = 0
@@ -54,7 +55,9 @@ class GantryMotorControllers:
         x, y = coord_to_move
         self.move_to((x, y))
         self.move_up()
+        time.sleep(0.5)
         self.move_direction(direction)
+        time.sleep(0.5)
         self.move_down()
     
     def move_direction(self, direction):
@@ -80,9 +83,20 @@ class GantryMotorControllers:
         directionX = 1 if deltaX >= 0 else -1
         directionY = 1 if deltaY >= 0 else -1
 
-        self.stepX(directionX, self.delta_to_steps(abs(deltaX)))
-        self.stepY(directionY, self.delta_to_steps(abs(deltaY)))
+        # self.stepX(directionX, self.delta_to_steps(abs(deltaX)))
+        # self.stepY(directionY, self.delta_to_steps(abs(deltaY)))
+        
+        tX = threading.Thread(target=self.stepX, args=(directionX, self.delta_to_steps(abs(deltaX))))
+        tY = threading.Thread(target=self.stepY, args=(directionY, self.delta_to_steps(abs(deltaY))))
 
+        # Start both threads
+        tX.start()
+        tY.start()
+
+        # Wait for both to finish
+        tX.join()
+        tY.join()
+        
         self.current_position[0] = dest[0]
         self.current_position[1] = dest[1]
         print(f"Moved to position: {self.current_position}")
@@ -102,6 +116,7 @@ class GantryMotorControllers:
     def stepY(self, direction, steps, step_delay=0.005):
         # GPIO.output(self.dirY_pin, GPIO.HIGH if direction > 0 else GPIO.LOW)
         self.pi.write(self.dirY_pin, RIGHT if direction > 0 else LEFT)
+        print("DIRECTION: ", direction)
         for _ in range(steps):
             self.pi.write(self.stepY_pin, 1)
             time.sleep(step_delay)
