@@ -7,8 +7,9 @@ This file abstracts hardware control away from main logic.
 import time
 import pigpio as GPIO
 
-STEPS_TO_BLOCK = 100  # Example conversion factor
-HEIGHT_TO_STEPS_Z = 30
+#425.45 is more precise
+STEPS_TO_BLOCK = 425  # Example conversion factor
+HEIGHT_TO_STEPS_Z = 0
 
 RIGHT = 1
 LEFT = 0
