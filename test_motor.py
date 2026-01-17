@@ -22,6 +22,10 @@ pi.set_mode(DIRY, pigpio.OUTPUT)
 pi.set_mode(STEPZ, pigpio.OUTPUT)
 pi.set_mode(DIRZ, pigpio.OUTPUT)
 
+pi.write(DIRX, 1)
+pi.write(DIRY, 1)
+pi.write(DIRZ, 1)
+
 pi.write(STEPX, 1)
 pi.write(STEPY, 1)
 pi.write(STEPZ, 1)
@@ -32,10 +36,10 @@ for i in range(2000):
     pi.write(STEPX, 1)
     pi.write(STEPY, 1)
     pi.write(STEPZ, 1)
-    time.sleep(0.001)   # 10 ms HIGH
+    time.sleep(0.001)   # 1 ms HIGH
     pi.write(STEPX, 0)
     pi.write(STEPY, 0)
     pi.write(STEPZ, 0)
-    time.sleep(0.001)   # 10 ms LOW
+    time.sleep(0.001)   # 1 ms LOW
 
 pi.stop()
