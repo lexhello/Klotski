@@ -5,7 +5,7 @@ This file abstracts hardware control away from main logic.
 """
 
 import time
-import RPi.GPIO as GPIO
+import pigpio as GPIO
 
 STEPS_TO_BLOCK = 100  # Example conversion factor
 HEIGHT_TO_STEPS_Z = 30
@@ -26,7 +26,6 @@ class GantryMotorControllers:
         print("Position reset to origin.")
 
     def initialize(self):
-        GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.stepX_pin, GPIO.OUT)
         GPIO.setup(self.dirX_pin, GPIO.OUT)
         GPIO.setup(self.stepY_pin, GPIO.OUT)
