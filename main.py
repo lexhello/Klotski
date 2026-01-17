@@ -50,7 +50,7 @@ def parse_solver_output(raw):
     return moves
 
 
-def execute_puzzle_solution(board, gantry):
+def execute_puzzle_solution(gantry):
     """
     Solve the puzzle and execute moves on the gantry
     
@@ -58,17 +58,14 @@ def execute_puzzle_solution(board, gantry):
         board: Initial puzzle state as list
         gantry: GantryMotorControllers instance
     """
-    n = len(board)
-    k = int((n)**0.5)
-    if k*k != n:
-        print("Board length must be perfect square!")
-        return
-
-    print(f"Solving {k}x{k} puzzle...")
-    raw_output = call_cpp_solver(board, k)
     
-    print("\n[Raw Solver Output]:")
-    print(raw_output)
+    PORT = 5555
+    
+    try:
+        raw_output = receive_data(PORT)
+    except KeyboardInterrupt:
+        print("\nShutting down...")
+    
     
     moves = parse_solver_output(raw_output)
     
@@ -80,6 +77,44 @@ def execute_puzzle_solution(board, gantry):
     
     print("Puzzle solved!")
 
+import socket
+
+def receive_data(port):
+    """Receive data and print it."""
+    # Create a socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    
+    # Bind to all interfaces
+    sock.bind(('0.0.0.0', port))
+    
+    # Listen for connections
+    sock.listen(1)
+    print(f"Listening on port {port}...")
+    
+    while True:
+        # Accept a connection
+        conn, addr = sock.accept()
+        print(f"Connection from {addr}")
+        
+        # Receive all data
+        data_chunks = []
+        while True:
+            chunk = conn.recv(4096)
+            if not chunk:
+                break
+            data_chunks.append(chunk)
+        
+        # Decode and print
+        data = b''.join(data_chunks).decode('utf-8')
+        print("Received data:")
+        print(data)
+        print(f"\n--- Received {len(data)} bytes ---")
+        
+        # Close connection
+        conn.close()
+        print("Connection closed, waiting for next connection...\n")
+        return data
+    
 
 def main():
     # Initialize gantry (replace with your actual pin numbers)
@@ -93,17 +128,8 @@ def main():
         gantry.initialize()
         gantry.reset_position()
         
-        print("\nEnter puzzle board like: [0, 1, 2, 3, 4, 5, 6, 7, 8]")
-        print("(0 represents the empty space)")
-        text = input("> ").strip()
-        
-        try:
-            board = json.loads(text)
-        except json.JSONDecodeError:
-            print("Invalid input format! Must be like [0,1,2,3,...]")
-            return
-        
-        execute_puzzle_solution(board, gantry)
+        # execute_puzzle_solution(gantry)
+        execute_puzzle_solution(None)
         
     finally:
         # gantry.cleanup()

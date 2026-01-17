@@ -9,6 +9,17 @@ using namespace std;
 
 // const std::vector<int> goal = {1,2,3,4,5,6,7,8, 0};
 const std::vector<int> goal = {1,2,3,4,5,6,7,8, 9, 10, 11, 12, 13, 14, 15, 0};
+
+// Check if two moves are opposites
+bool isOpposite(const string& move1, const string& move2) {
+    // return false;
+    if (move1 == "U" && move2 == "D") return true;
+    if (move1 == "D" && move2 == "U") return true;
+    if (move1 == "L" && move2 == "R") return true;
+    if (move1 == "R" && move2 == "L") return true;
+    return false;
+}
+
 // Manhattan distance
 int manhattan(const vector<int>& board, int k) {
     int dist = 0;
@@ -55,6 +66,7 @@ int main() {
         int f, g, h;
         vector<int> board;
         int zero_pos;
+        string last_move;
     };
 
     struct PQcmp {
@@ -71,6 +83,7 @@ int main() {
     startNode.h = h0;
     startNode.f = h0;
     startNode.zero_pos = find(start.begin(), start.end(), 0) - start.begin();
+    startNode.last_move = "";
 
     open.push(startNode);
 
@@ -95,6 +108,8 @@ int main() {
         open.pop();
 
         string curKey = encode(cur.board);
+
+        if (best_g[curKey] < cur.g) continue;
 
         if (curKey == goalKey) {
             // Reconstruct path
@@ -146,6 +161,10 @@ int main() {
         int zr = z / k, zc = z % k;
 
         for (auto &mv : moves) {
+
+            if (!cur.last_move.empty() && isOpposite(cur.last_move, mv.second))
+                continue;
+
             int offset = mv.first;
             int nz = z + offset;
             int nr = nz / k, nc = nz % k;
@@ -174,11 +193,13 @@ int main() {
             nxt.h = nh;
             nxt.f = ng + nh;
             nxt.zero_pos = nz;
+            nxt.last_move = mv.second;  // Set the last move
             open.push(nxt);
 
             best_g[nbKey] = ng;
             parent[nbKey] = {curKey, mv.second};
         }
     }
+    
     return 0;
 }
