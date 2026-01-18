@@ -125,6 +125,9 @@ def main():
         gantry.reset_position()
         
         execute_puzzle_solution(gantry)
+        gantry.move_to((0, 0))
+        gantry.stepX(-1, 150, reset=True)
+        gantry.stepY(-1, 50, reset=True)
         # execute_puzzle_solution(None)
         
     finally:
