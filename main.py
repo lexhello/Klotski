@@ -79,24 +79,22 @@ def execute_puzzle_solution(gantry):
 
 import socket
 
+
 def receive_data(port):
     """Receive data and print it."""
-    # Create a socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # Create an IPv6 socket
+    sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
     
-    # Bind to all interfaces
-    sock.bind(('0.0.0.0', port))
+    # Bind to all IPv6 interfaces
+    sock.bind(('::', port))
     
-    # Listen for connections
     sock.listen(1)
-    print(f"Listening on port {port}...")
+    print(f"Listening on IPv6 port {port}...")
     
     while True:
-        # Accept a connection
         conn, addr = sock.accept()
         print(f"Connection from {addr}")
         
-        # Receive all data
         data_chunks = []
         while True:
             chunk = conn.recv(4096)
@@ -104,17 +102,15 @@ def receive_data(port):
                 break
             data_chunks.append(chunk)
         
-        # Decode and print
         data = b''.join(data_chunks).decode('utf-8')
         print("Received data:")
         print(data)
         print(f"\n--- Received {len(data)} bytes ---")
         
-        # Close connection
         conn.close()
         print("Connection closed, waiting for next connection...\n")
         return data
-    
+
 
 def main():
     # Initialize gantry (replace with your actual pin numbers)
@@ -128,8 +124,8 @@ def main():
         gantry.initialize()
         gantry.reset_position()
         
-        # execute_puzzle_solution(gantry)
-        execute_puzzle_solution(None)
+        execute_puzzle_solution(gantry)
+        # execute_puzzle_solution(None)
         
     finally:
         # gantry.cleanup()

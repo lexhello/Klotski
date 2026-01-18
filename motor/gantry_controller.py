@@ -32,6 +32,9 @@ class GantryMotorControllers:
 
     def reset_position(self):
         self.current_position = [0, 0, 0]
+        self.stepX(1, 163)
+        self.stepY(1, 110)
+        
         #TODO move all motors to home position
         # should we do this by hand?
         print("Position reset to origin.")
